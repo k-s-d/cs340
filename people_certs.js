@@ -2,9 +2,9 @@ module.exports = function(){
     var express = require('express');
     var router = express.Router();
 
-    /* get people to populate in dropdown */
+    /* get students to populate in dropdown */
     function getPeople(res, mysql, context, complete){
-        mysql.pool.query("SELECT character_id AS pid, fname, lname FROm bsg_people", function(error, results, fields){
+        mysql.pool.query("SELECT studentID, firstName, lastName FROM students", function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end();
@@ -14,9 +14,9 @@ module.exports = function(){
         });
     }
 
-    /* get certificates to populate in dropdown */
+    /* get classes to populate in dropdown */
     function getCertificates(res, mysql, context, complete){
-        sql = "SELECT certification_id AS cid, title FROM bsg_cert";
+        sql = "SELECT classID, className FROM classes";
         mysql.pool.query(sql, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
@@ -31,18 +31,23 @@ module.exports = function(){
     /* TODO: get multiple certificates in a single column and group on
      * fname+lname or id column
      */
-    function getPeopleWithCertificates(res, mysql, context, complete){
-        sql = "SELECT pid, cid, CONCAT(fname,' ',lname) AS name, title AS certificate FROM bsg_people INNER JOIN bsg_cert_people on bsg_people.character_id = bsg_cert_people.pid INNER JOIN bsg_cert on bsg_cert.certification_id = bsg_cert_people.cid ORDER BY name, certificate"
+    function getPeopleWithCertificates(req, res, mysql, context, complete){
+        sql = "SELECT students-classes.classID AS cid, classes.className AS name, instructors.lastName AS 'Instructor' \
+               FROM students-classes \
+               INNER JOIN classes ON classes.classID=students-classes.classID \
+               INNER JOIN instructors ON classes.instructorID=instructors.instructorID \
+               WHERE studentID=?"
+        //sql = "SELECT pid, cid, CONCAT(fname,' ',lname) AS name, title AS certificate FROM bsg_people INNER JOIN bsg_cert_people on bsg_people.character_id = bsg_cert_people.pid INNER JOIN bsg_cert on bsg_cert.certification_id = bsg_cert_people.cid ORDER BY name, certificate"
+        var inserts = req.params.studentID
          mysql.pool.query(sql, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end()
             }
-            context.people_with_certs = results
+            context.classes = results
             complete();
         });
     }
-  
 
     /* List people with certificates along with 
      * displaying a form to associate a person with multiple certificates
@@ -50,21 +55,35 @@ module.exports = function(){
     router.get('/', function(req, res){
         var callbackCount = 0;
         var context = {};
-        context.jsscripts = ["deleteperson.js"];
+        context.jsscripts = ["deleteperson.js", "filterpeople.js"];
         var mysql = req.app.get('mysql');
         var handlebars_file = 'people_certs'
 
         getPeople(res, mysql, context, complete);
-        getCertificates(res, mysql, context, complete);
-        getPeopleWithCertificates(res, mysql, context, complete);
+        //getCertificates(res, mysql, context, complete);
+        //getPeopleWithCertificates(res, mysql, context, complete);
         function complete(){
             callbackCount++;
-            if(callbackCount >= 3){
+            if(callbackCount >= 1){
                 res.render(handlebars_file, context);
             }
         }
     });
 
+    router.get('/search/:studentID', function(req, res){
+        var callbackCount = 0;
+        var context = {};
+        context.jsscripts = ["searchpeople.js", "filterpeople.js"];
+        var mysql = req.app.get('mysql');
+        getPeople(res, mysql, context, complete);
+        getPeopleWithCertificates(req, res, mysql, context, complete)
+        function complete(){
+            callbackCount++;
+            if(callbackCount >= 2){
+                res.render('people_certs', context);
+            }
+        }
+    });
     /* Associate certificate or certificates with a person and 
      * then redirect to the people_with_certs page after adding 
      */

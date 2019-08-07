@@ -25,10 +25,10 @@ module.exports = function(){
         });
     }
 
-    function getPeoplebyHomeworld(req, res, mysql, context, complete){
-      var query = "SELECT bsg_people.character_id as id, fname, lname, bsg_planets.name AS homeworld, age FROM bsg_people INNER JOIN bsg_planets ON homeworld = bsg_planets.planet_id WHERE bsg_people.homeworld = ?";
+    function getStudentsByHouse(req, res, mysql, context, complete){
+      var query = "SELECT students.studentID, firstName, lastName, houses.houseName, birthdate, wand FROM students INNER JOIN houses ON houses.houseID = students.houseID WHERE students.houseID = ?";
       console.log(req.params)
-      var inserts = [req.params.homeworld]
+      var inserts = [req.params.houseID]
       mysql.pool.query(query, inserts, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
@@ -42,9 +42,8 @@ module.exports = function(){
     /* Find people whose fname starts with a given string in the req */
     function getPeopleWithNameLike(req, res, mysql, context, complete) {
       //sanitize the input as well as include the % character
-       var query = "SELECT bsg_people.character_id as id, fname, lname, bsg_planets.name AS homeworld, age FROM bsg_people INNER JOIN bsg_planets ON homeworld = bsg_planets.planet_id WHERE bsg_people.fname LIKE " + mysql.pool.escape(req.params.s + '%');
+       var query = "SELECT studentID, firstName, lastName, houses.houseName, birthdate, wand FROM students INNER JOIN houses ON houses.houseID=students.houseID WHERE students.firstName LIKE " + mysql.pool.escape(req.params.s + '%');
       console.log(query)
-
       mysql.pool.query(query, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
@@ -85,20 +84,19 @@ module.exports = function(){
         }
     });
 
-    /*Display all people from a given homeworld. Requires web based javascript to delete users with AJAX*/
-    router.get('/filter/:homeworld', function(req, res){
+    /*Display all people from a given house. Requires web based javascript to delete users with AJAX*/
+    router.get('/filter/:houseID', function(req, res){
         var callbackCount = 0;
         var context = {};
         context.jsscripts = ["deleteperson.js","filterpeople.js","searchpeople.js"];
         var mysql = req.app.get('mysql');
-        getPeoplebyHomeworld(req,res, mysql, context, complete);
-        getPlanets(res, mysql, context, complete);
+        getStudentsByHouse(req,res, mysql, context, complete);
+        getHouses(res, mysql, context, complete);
         function complete(){
             callbackCount++;
             if(callbackCount >= 2){
                 res.render('people', context);
             }
-
         }
     });
 
@@ -109,7 +107,7 @@ module.exports = function(){
         context.jsscripts = ["deleteperson.js","filterpeople.js","searchpeople.js"];
         var mysql = req.app.get('mysql');
         getPeopleWithNameLike(req, res, mysql, context, complete);
-        getPlanets(res, mysql, context, complete);
+        getHouses(res, mysql, context, complete);
         function complete(){
             callbackCount++;
             if(callbackCount >= 2){
