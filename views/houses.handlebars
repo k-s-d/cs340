@@ -1,0 +1,30 @@
+<html>
+  add new house:</h3>
+<form id="addhouse" action="/houses" method="post">
+    House name: <input type="text" name="houseName"><br>
+    House Head: <input type="text" name="houseHead"><br>
+    House Color(s): <input type="text" name="houseColor"><br>
+    <br>
+    <input type="submit" value="Submit">
+ </form>
+<br/>
+
+  </table>
+  <h3>Current houses:</h3>
+  <table>
+      <thead> 
+          <th>House Name</th> 
+          <th>House Color(s)</th> 
+      </thead> 
+      <tbody>
+          {{#each houses}} 
+          <tr> 
+              <td>{{houseName}}</td> 
+              <td>{{houseHead}}</td> 
+              {{!-- <td><button onclick="deletePerson({{studentID}})">Delete</button></td> --}}
+              {{!-- <td><a href="/people/{{studentID}}">Update</a></td> --}}
+          </tr> 
+          {{/each}} 
+      </tbody> 
+  </table> 
+</html>

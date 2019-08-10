@@ -1,0 +1,26 @@
+<html>
+  add new house:</h3>
+<form id="adddepartments" action="/departments" method="post">
+    House name: <input type="text" name="departmentName"><br>
+    <br>
+    <input type="submit" value="Submit">
+ </form>
+<br/>
+
+  </table>
+  <h3>Current Departments:</h3>
+  <table>
+      <thead> 
+          <th>Department Name</th> 
+      </thead> 
+      <tbody>
+          {{#each departments}} 
+          <tr> 
+              <td>{{departmentName}}</td> 
+              {{!-- <td><button onclick="deletePerson({{studentID}})">Delete</button></td> --}}
+              {{!-- <td><a href="/people/{{studentID}}">Update</a></td> --}}
+          </tr> 
+          {{/each}} 
+      </tbody> 
+  </table> 
+</html>

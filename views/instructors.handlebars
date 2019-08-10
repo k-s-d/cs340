@@ -1,0 +1,37 @@
+<html>
+{{#each foo}}
+{{this}}
+{{/each}}
+<h3>Add new instructor:</h3>
+<form id="addinstructor" action="/instructors" method="post">
+    First name: <input type="text" name="firstName"><br>
+    Last name: <input type="text" name="lastName"><br>
+    House: <select name="houseID"> 
+        {{#each houses}}
+        <option value="{{houseID}}">{{houseName}}</option>
+        {{/each}}
+    </select><br>
+    <input type="submit" value="Submit">
+ </form>
+<br/>
+
+<h3>Current Instructors:</h3>
+<table>
+    <thead> 
+        <th>First Name</th> 
+        <th>Last Name</th> 
+        <th>House</th>  
+    </thead> 
+    <tbody>
+        {{#each instructors}} 
+        <tr> 
+            <td>{{firstName}}</td> 
+            <td>{{lastName}}</td> 
+            <td>{{houseName}}</td>
+            {{!-- <td><button onclick="deletePerson({{studentID}})">Delete</button></td> --}}
+            {{!-- <td><a href="/people/{{studentID}}">Update</a></td> --}}
+        </tr> 
+        {{/each}} 
+    </tbody> 
+</table> 
+</html>

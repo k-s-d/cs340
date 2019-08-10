@@ -1,0 +1,47 @@
+<html>
+  add new class:</h3>
+<form id="addclasses" action="/classes" method="post">
+    Class name: <input type="text" name="className"><br>
+    maximum capacity: <input type="int" name="maxCap"><br>
+    minimum capacity: <input type="int" name="minCap"><br>
+    Age Requirement: <input type="int" name="ageRequirement"><br>
+    Instructor: <select name="instructorID">
+        {{#each instructors}}
+        <option value="{{instructorID}}">{{lastName}}</option>
+        {{/each}}
+    </select><br>
+    Department: <select name="departmentID">
+        {{#each departments}}
+        <option value="{{departmentID}}">{{departmentName}}</option>
+        {{/each}}
+    </select><br>
+    <br>
+    <input type="submit" value="Submit">
+ </form>
+<br/>
+
+  </table>
+  <h3>Current Classes:</h3>
+  <table>
+      <thead> 
+          <th>Class Name</th> 
+          <th>Instructor</th>
+          <th>Maximum Capacity</th>
+          <th>Minimum Capacity</th>
+          <th>Age Requirement</th>
+      </thead> 
+      <tbody>
+          {{#each classes}} 
+          <tr> 
+              <td>{{className}}</td> 
+              <td>{{lastName}}</td> 
+              <td>{{maxCap}}</td> 
+              <td>{{minCap}}</td> 
+              <td>{{ageRequirement}}</td> 
+              {{!-- <td><button onclick="deletePerson({{studentID}})">Delete</button></td> --}}
+              {{!-- <td><a href="/people/{{studentID}}">Update</a></td> --}}
+          </tr> 
+          {{/each}} 
+      </tbody> 
+  </table> 
+</html>
