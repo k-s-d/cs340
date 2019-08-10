@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+	<title>Demo Page</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    {{#each jsscripts}}
+    <script src="/static/{{this}}"></script>
+    {{/each}}
+</head>
+<body>
+    <div id=menuBar>
+        <ul class=menuList>
+            <li>Classes
+                <ul class="dropDown">
+                    <li><a href='/classes'>See Classes</a></li>
+                    <li><a href='/departments'>See Departments</a></li>
+                </ul>
+            </li>
+            <li>Students
+                <ul class="dropDown">
+                    <li><a href='/people'>See students</a></li>
+                    <li><a href='/people_certs'>Enroll / Unenroll Classes</a></li>
+                </ul>
+            </li>
+            <li><a href="/instructors">Instructors</a></li>
+            <li><a href='/houses'>Houses</a></li>
+        </ul>
+
+    </div>
+	{{{body}}}
+</body>
+</html>
