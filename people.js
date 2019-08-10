@@ -139,8 +139,6 @@ module.exports = function(){
     /* Adds a person, redirects to the people page after adding */
 
     router.post('/', function(req, res){
-        console.log(req.body.homeworld)
-        console.log(req.body)
         var mysql = req.app.get('mysql');
         var sql = "INSERT INTO students (firstName, lastName, birthdate, houseID, wand) VALUES (?,?,?,?,?)";
         var inserts = [req.body.firstName, req.body.lastName, req.body.birthdate, req.body.houseID, req.body.wand];

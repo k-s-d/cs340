@@ -3,26 +3,26 @@ module.exports = function(){
     var router = express.Router();
 
     /* get students to populate in dropdown */
-    function getPeople(res, mysql, context, complete){
+    function getStudents(res, mysql, context, complete){
         mysql.pool.query("SELECT studentID, firstName, lastName FROM students", function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end();
             }
-            context.people = results;
+            context.students = results;
             complete();
         });
     }
 
     /* get classes to populate in dropdown */
-    function getCertificates(res, mysql, context, complete){
+    function getClasses(res, mysql, context, complete){
         sql = "SELECT classID, className FROM classes";
         mysql.pool.query(sql, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end()
             }
-            context.certificates = results
+            context.classes = results
             complete();
         });
     }
@@ -31,20 +31,17 @@ module.exports = function(){
     /* TODO: get multiple certificates in a single column and group on
      * fname+lname or id column
      */
-    function getPeopleWithCertificates(req, res, mysql, context, complete){
-        sql = "SELECT students-classes.classID AS cid, classes.className AS name, instructors.lastName AS 'Instructor' \
-               FROM students-classes \
-               INNER JOIN classes ON classes.classID=students-classes.classID \
-               INNER JOIN instructors ON classes.instructorID=instructors.instructorID \
-               WHERE studentID=?"
+    function getClassesForStudent(req, res, mysql, context, complete){
+        query = "SELECT `students-classes`.studentID, `students-classes`.classID AS cid, classes.className AS name, instructors.lastName AS Instructor FROM `students-classes` INNER JOIN classes ON classes.classID=`students-classes`.classID INNER JOIN instructors ON classes.instructorID = instructors.instructorID WHERE `students-classes`.studentID = ?"
+        //query = "SELECT * FROM `students-classes` WHERE studentID = ?";
         //sql = "SELECT pid, cid, CONCAT(fname,' ',lname) AS name, title AS certificate FROM bsg_people INNER JOIN bsg_cert_people on bsg_people.character_id = bsg_cert_people.pid INNER JOIN bsg_cert on bsg_cert.certification_id = bsg_cert_people.cid ORDER BY name, certificate"
-        var inserts = req.params.studentID
-         mysql.pool.query(sql, function(error, results, fields){
+        var inserts = [req.params.studentID];
+         mysql.pool.query(query, inserts, function(error, results, fields){
             if(error){
                 res.write(JSON.stringify(error));
                 res.end()
             }
-            context.classes = results
+            context.student_classes = results
             complete();
         });
     }
@@ -55,17 +52,16 @@ module.exports = function(){
     router.get('/', function(req, res){
         var callbackCount = 0;
         var context = {};
-        context.jsscripts = ["deleteperson.js", "filterpeople.js"];
+        context.jsscripts = ["deleteperson.js", "getClassesByStudent.js"];
         var mysql = req.app.get('mysql');
-        var handlebars_file = 'people_certs'
 
-        getPeople(res, mysql, context, complete);
-        //getCertificates(res, mysql, context, complete);
-        //getPeopleWithCertificates(res, mysql, context, complete);
+        getStudents(res, mysql, context, complete);
+        getClasses(res, mysql, context, complete);
+        //getClassesForStudent(res, mysql, context, complete);
         function complete(){
             callbackCount++;
-            if(callbackCount >= 1){
-                res.render(handlebars_file, context);
+            if(callbackCount >= 2){
+                res.render('people_certs', context);
             }
         }
     });
@@ -73,13 +69,14 @@ module.exports = function(){
     router.get('/search/:studentID', function(req, res){
         var callbackCount = 0;
         var context = {};
-        context.jsscripts = ["searchpeople.js", "filterpeople.js"];
+        context.jsscripts = ["deleteperson.js", "searchpeople.js", "getClassesByStudent.js"];
         var mysql = req.app.get('mysql');
-        getPeople(res, mysql, context, complete);
-        getPeopleWithCertificates(req, res, mysql, context, complete)
+        getClasses(res, mysql, context, complete);
+        getClassesForStudent(req, res, mysql, context, complete);
+        getStudents(res, mysql, context, complete);
         function complete(){
             callbackCount++;
-            if(callbackCount >= 2){
+            if(callbackCount >= 3){
                 res.render('people_certs', context);
             }
         }
@@ -88,27 +85,18 @@ module.exports = function(){
      * then redirect to the people_with_certs page after adding 
      */
     router.post('/', function(req, res){
-        console.log("We get the multi-select certificate dropdown as ", req.body.certs)
         var mysql = req.app.get('mysql');
-        // let's get out the certificates from the array that was submitted by the form 
-        var certificates = req.body.certs
-        var person = req.body.pid
-        for (let cert of certificates) {
-          console.log("Processing certificate id " + cert)
-          var sql = "INSERT INTO bsg_cert_people (pid, cid) VALUES (?,?)";
-          var inserts = [person, cert];
-          sql = mysql.pool.query(sql, inserts, function(error, results, fields){
-            if(error){
-                //TODO: send error messages to frontend as the following doesn't work
-                /* 
+        var query = "INSERT INTO `students-classes` (studentID, classID) VALUES (?, ?)"
+        var inserts = [req.body.student, req.body.class];
+        sql = mysql.pool.query(query, inserts, function(error, results, fields) {
+            if (error) {
+                console.log(JSON.stringify(error));
                 res.write(JSON.stringify(error));
                 res.end();
-                */
-                console.log(error)
+            } else {
+                res.redirect('people_certs/search/'+ req.body.student);
             }
-          });
-        } //for loop ends here 
-        res.redirect('/people_certs');
+        });
     });
 
     /* Delete a person's certification record */
@@ -120,7 +108,7 @@ module.exports = function(){
         console.log(req.params.pid)
         console.log(req.params.cid)
         var mysql = req.app.get('mysql');
-        var sql = "DELETE FROM bsg_cert_people WHERE pid = ? AND cid = ?";
+        var sql = "DELETE FROM `students-classes` WHERE studentID = ? AND classID = ?";
         var inserts = [req.params.pid, req.params.cid];
         sql = mysql.pool.query(sql, inserts, function(error, results, fields){
             if(error){

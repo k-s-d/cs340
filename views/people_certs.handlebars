@@ -3,40 +3,50 @@
 {{this}}
 {{/each}}
 <div>
+
+<h3>Add a class for a Student</h3>
+    <form id="addclass" action="/people_certs" method="post">
+    Student: <select id="student_add_select" name="student">
+        {{#each students}}
+            <option value='{{studentID}}'>{{firstName}} {{lastName}}</option>
+        {{/each}}
+        </select>
+    Class: <select id="class_add_select" name="class">
+        {{#each classes}}
+            <option value='{{classID}}'>{{className}}</option>
+        {{/each}}
+        </select>
+        <br>
+        <input type="submit" value="Submit">
+    </form>
+    <br/>
    
-<h3> Associate Certificate(s) with a Person </h3>
-    <form id="add_people_certificates" action='' method=''>
-    Person: <select id="person_select" name='pid'>
-        {{#each people}}
+<h3> View classes for a Student </h3>
+    <form id="viewclasses" action='' method=''>
+    Student: <select id="person_select" name='pid'>
+        {{#each students}}
           <option value='{{studentID}}'>{{firstName}} {{lastName}}</option>
         {{/each}}
     </select>
     <br>
-
-    {{!--Certificates:<sup>Multi-select</sup> <select multiple name="certs"> 
-        {{#each classes}}
-        <option value="{{cid}}">{{title}}</option>
-        {{/each}}
-    </select><br>
-    --}}
-    <input type="button" value="Submit" onclick="filterPeople()">
+    <input type="button" value="Submit" onclick="getClassesByStudent()">
     </form>
 </div>
+
 <br/>
-<h3> List of People with their Certifications </h3>
+
+<h3> Classes by Student </h3>
 <table>
     <thead> 
-        <th>Name</th> 
-        <th>Certificate</th> 
+        <th>Class</th> 
+        <th>Instructor</th> 
     </thead> 
     <tbody> 
-        {{#each classes}} 
+        {{#each student_classes}} 
         <tr> 
-            <td>{{cid}}</td> 
             <td>{{name}}</td> 
             <td>{{Instructor}}</td> 
-            {{!-- <td><button onclick="deletePeopleCert({{pid}},{{cid}})">Delete</button></td> --}}
-            {{!-- <td><a href='#' onclick='javascript: alert("You can implement it just like the Add form.")'>Update</a></td> --}}
+            <td><button onclick="deletePeopleCert({{studentID}},{{cid}})">Delete</button></td>
         </tr>
         {{else}}
         <b> No people with any certifications found! Grant some using the form. </b>
